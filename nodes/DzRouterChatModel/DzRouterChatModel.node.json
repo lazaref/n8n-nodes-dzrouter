@@ -1,0 +1,19 @@
+{
+	"node": "n8n-nodes-dzrouter.dzRouterChatModel",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Development"],
+	"resources": {
+		"credentialDocumentation": [
+			{
+				"url": "https://github.com/lazaref/n8n-nodes-dzrouter#credentials"
+			}
+		],
+		"primaryDocumentation": [
+			{
+				"url": "https://github.com/lazaref/n8n-nodes-dzrouter#dzrouter-chat-model"
+			}
+		]
+	},
+	"alias": ["LLM", "GPT", "Claude", "Gemini", "DeepSeek", "OpenRouter", "Chat Model"]
+}

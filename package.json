@@ -1,0 +1,71 @@
+{
+	"name": "n8n-nodes-dzrouter",
+	"version": "0.1.0",
+	"description": "n8n nodes for DzRouter: 200+ AI models (GPT, Claude, Gemini, DeepSeek, Llama) through one API key, billed in Algerian dinars. Chat, AI Agent chat model, text tools and model catalog.",
+	"license": "MIT",
+	"homepage": "https://github.com/lazaref/n8n-nodes-dzrouter#readme",
+	"keywords": [
+		"n8n-community-node-package",
+		"n8n",
+		"dzrouter",
+		"llm",
+		"ai",
+		"openai",
+		"openrouter",
+		"chat-model",
+		"ai-agent",
+		"algeria"
+	],
+	"author": {
+		"name": "Klazaref",
+		"email": "klazaref@gmail.com"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/lazaref/n8n-nodes-dzrouter.git"
+	},
+	"scripts": {
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
+		"dev": "n8n-node dev",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
+		"prepublishOnly": "n8n-node prerelease",
+		"test": "node test/e2e.mjs"
+	},
+	"files": [
+		"dist",
+		"!dist/tsconfig.tsbuildinfo",
+		"!dist/**/*.js.map"
+	],
+	"n8n": {
+		"n8nNodesApiVersion": 1,
+		"aiNodeSdkVersion": 1,
+		"strict": true,
+		"credentials": [
+			"dist/credentials/DzRouterApi.credentials.js"
+		],
+		"nodes": [
+			"dist/nodes/DzRouter/DzRouter.node.js",
+			"dist/nodes/DzRouterChatModel/DzRouterChatModel.node.js"
+		]
+	},
+	"devDependencies": {
+		"@n8n/node-cli": "*",
+		"eslint": "9.32.0",
+		"prettier": "3.6.2",
+		"release-it": "^21.1.0",
+		"typescript": "5.9.2"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*",
+		"@n8n/ai-node-sdk": "*"
+	},
+	"bugs": {
+		"url": "https://github.com/lazaref/n8n-nodes-dzrouter/issues"
+	},
+	"engines": {
+		"node": ">=20.15"
+	}
+}
