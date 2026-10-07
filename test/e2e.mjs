@@ -399,6 +399,17 @@ try {
 	console.error('\nFATAL', e);
 	console.error(serverLog.slice(-2000));
 } finally {
+	// E2E_KEEP=<file>: keep the mock-backed server up for manual testing in n8n,
+	// writing its base URL and the test key to that file (never to the console)
+	if (process.env.E2E_KEEP && credentials.apiKey) {
+		const fs = await import('node:fs');
+		fs.writeFileSync(process.env.E2E_KEEP, `Base URL: ${base}/v1
+API key: ${credentials.apiKey}
+`);
+		console.log(`
+RESULT: ${passed} passed, ${failed} failed. Server kept running on ${base} (details in ${process.env.E2E_KEEP}); Ctrl+C to stop.`);
+		await new Promise(() => {});
+	}
 	server.kill();
 	upstream.close();
 }
