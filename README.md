@@ -1,6 +1,6 @@
 # n8n-nodes-dzrouter
 
-Use **200+ AI models** (GPT, Claude, Gemini, DeepSeek, Llama, Qwen, Mistral and more) in your n8n workflows through a single [DzRouter](https://dzrouter.com) API key, paid in Algerian dinars (Edahabia/CIB, BaridiMob) or by card.
+Use **200+ AI models** (GPT, Claude, Gemini, DeepSeek, Llama, Qwen, Mistral and more) in your n8n workflows through a single [DzRouter](https://dzrouter.com) API key, paid with Pulses, DzRouter's AI credit (1 Pulse = 1 DA), bought with Edahabia/CIB, BaridiMob or a card.
 
 DzRouter is an OpenAI-compatible AI router built for Algeria and North Africa. This package gives you:
 
@@ -9,7 +9,7 @@ DzRouter is an OpenAI-compatible AI router built for Algeria and North Africa. T
 | **DzRouter** | Chat with any model, run ready-made text tasks (summarize, translate, classify, extract, sentiment), browse the model catalog and check your balance. Works as an AI Agent tool. |
 | **DzRouter Chat Model** | The language model for n8n's **AI Agent**, **Basic LLM Chain**, **Summarization Chain** and every other AI node. |
 
-Every call reports its **cost in USD and in dinars (DA)**, so you always know what a workflow run costs.
+Every call reports its **cost in Pulses** (1 Pulse = 1 DA), so you always know what a workflow run costs.
 
 [Installation](#installation) · [Credentials](#credentials) · [DzRouter node](#dzrouter-node) · [DzRouter Chat Model](#dzrouter-chat-model) · [Examples](#examples) · [Compatibility](#compatibility)
 
@@ -25,7 +25,7 @@ n8n-nodes-dzrouter
 
 ## Credentials
 
-1. Create an account at [dzrouter.com](https://dzrouter.com) and top up your balance (from 5 USD, in DA or by card).
+1. Create an account at [dzrouter.com](https://dzrouter.com) and top up your balance with Pulses (from 500 DA, 1 Pulse = 1 DA).
 2. In the DzRouter console, open **API keys** and create a key. It starts with `sk-dz-`.
 3. In n8n, create a **DzRouter API** credential and paste the key. Leave **Base URL** as `https://dzrouter.com/v1`.
 
@@ -47,7 +47,7 @@ Send a conversation to any model.
   "model": "openai/gpt-4o-mini",
   "finishReason": "stop",
   "usage": { "promptTokens": 21, "completionTokens": 9, "totalTokens": 30 },
-  "cost": { "usd": 0.0000094, "dzd": 0.0024 }
+  "cost": { "pulses": 0.0024 }
 }
 ```
 
@@ -71,13 +71,13 @@ Extracted values are converted to the declared types. For example, `"1 200,50"` 
 
 ### Model
 
-- **Get Many**: the catalog with prices per 1M tokens in USD and DZD. Filter by provider, required capabilities (vision, tool calling, reasoning), maximum input/output price, minimum context, or search words. Sort by recommended order, price, context or name.
+- **Get Many**: the catalog with prices per 1M tokens in Pulses. Filter by provider, required capabilities (vision, tool calling, reasoning), maximum input/output price, minimum context, or search words. Sort by recommended order, price, context or name.
 - **Find Cheapest**: the cheapest model that matches your filters, compared on input, output or blended price (3 input : 1 output). Pass its `id` to a later node to always use the cheapest suitable model.
 - **Get**: one model's details and prices.
 
 ### Account → Get Balance
 
-Returns the balance (USD and DZD), total spend, rate limit and last use of the key. It's free and never billed. Put it before an expensive step, together with an **If** node, to stop a workflow when the balance is low.
+Returns the balance and total spend in Pulses, rate limit and last use of the key. It's free and never billed. Put it before an expensive step, together with an **If** node, to stop a workflow when the balance is low.
 
 ## DzRouter Chat Model
 

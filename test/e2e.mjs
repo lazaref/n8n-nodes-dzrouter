@@ -235,8 +235,8 @@ try {
 		ok('reasoning surfaced', out.reasoning === 'thinking…');
 		ok('usage normalised', out.usage.promptTokens === 1000 && out.usage.completionTokens === 500 && out.usage.totalTokens === 1500, JSON.stringify(out.usage));
 		// 1000 × 0.15×1.2/1e6 + 500 × 0.6×1.2/1e6 = 0.00018 + 0.00036
-		ok('cost in USD from headers', Math.abs(out.cost.usd - 0.00054) < 1e-9, JSON.stringify(out.cost));
-		ok('cost in DZD from headers', Math.abs(out.cost.dzd - 0.135) < 1e-6, JSON.stringify(out.cost));
+		// $0.00054 of list price × markup, at 250 Pulses per dollar
+		ok('cost in Pulses from headers', Math.abs(out.cost.pulses - 0.135) < 1e-4 && out.cost.usd === undefined, JSON.stringify(out.cost));
 		ok('empty messages dropped', lastChat.messages.length === 2, JSON.stringify(lastChat.messages));
 		ok(
 			'options mapped to OpenAI fields',
@@ -262,7 +262,7 @@ try {
 			simplify: false,
 			options: {},
 		});
-		ok('raw output keeps OpenAI shape + cost', raw.object === 'chat.completion' && Array.isArray(raw.choices) && raw.cost.usd > 0, JSON.stringify(raw).slice(0, 200));
+		ok('raw output keeps OpenAI shape + cost', raw.object === 'chat.completion' && Array.isArray(raw.choices) && raw.cost.pulses > 0, JSON.stringify(raw).slice(0, 200));
 
 		const many = await run(
 			{ resource: 'chat', operation: 'message', model: model('openai/gpt-4o-mini'), messages: { values: [{ role: 'user', content: 'Hi' }] }, simplify: true, options: {} },
@@ -279,7 +279,7 @@ try {
 		ok('summary trimmed', sum.summary === 'A short summary.', JSON.stringify(sum));
 		ok('summary prompt has length, format, language', /one sentence/.test(lastChat.messages[0].content) && /bulleted/.test(lastChat.messages[0].content) && /Arabic/.test(lastChat.messages[0].content));
 		ok('text tasks default to temperature 0', lastChat.temperature === 0);
-		ok('usage + cost under "dzrouter"', sum.dzrouter.cost.usd > 0 && sum.dzrouter.model === 'openai/gpt-4o-mini', JSON.stringify(sum.dzrouter));
+		ok('usage + cost under "dzrouter"', sum.dzrouter.cost.pulses > 0 && sum.dzrouter.model === 'openai/gpt-4o-mini', JSON.stringify(sum.dzrouter));
 
 		const [tr] = await run({ ...textBase, operation: 'translate', targetLanguage: 'other', customLanguage: 'Portuguese', options: { tone: 'formal' } });
 		ok('translation returned', tr.translation === 'Bonjour le monde');
@@ -327,14 +327,13 @@ try {
 		ok('catalog listed (4 models)', all.length === 4, all.length);
 		ok('sorted by input price', all[0].id === 'meta-llama/tiny' && all.at(-1).id === 'anthropic/claude-sonnet-x', all.map((m) => m.id).join(','));
 		const mini = all.find((m) => m.id === 'openai/gpt-4o-mini');
-		ok('customer prices per 1M (with markup)', mini.inputPerMillionUsd === 0.18 && mini.outputPerMillionUsd === 0.72, JSON.stringify(mini));
-		ok('DZD prices per 1M', mini.inputPerMillionDzd === 45 && mini.outputPerMillionDzd === 180, JSON.stringify(mini));
+		ok('customer prices per 1M in Pulses (markup applied)', mini.inputPerMillionPulses === 45 && mini.outputPerMillionPulses === 180 && mini.inputPerMillionUsd === undefined, JSON.stringify(mini));
 
 		const limited = await run({ resource: 'model', operation: 'getAll', returnAll: false, limit: 2, filters: {}, options: {} });
 		ok('limit respected', limited.length === 2);
 
-		const vision = await run({ resource: 'model', operation: 'getAll', returnAll: true, filters: { capabilities: ['vision'], maxInputPrice: 1 }, options: { includeDzd: false } });
-		ok('capability + price filters', vision.length === 1 && vision[0].id === 'google/gemini-x-flash' && vision[0].inputPerMillionDzd === undefined, JSON.stringify(vision.map((m) => m.id)));
+		const vision = await run({ resource: 'model', operation: 'getAll', returnAll: true, filters: { capabilities: ['vision'], maxInputPrice: 250 }, options: {} });
+		ok('capability + price filters', vision.length === 1 && vision[0].id === 'google/gemini-x-flash', JSON.stringify(vision.map((m) => m.id)));
 
 		const search = await run({ resource: 'model', operation: 'getAll', returnAll: true, filters: { search: 'claude sonnet' }, options: {} });
 		ok('word search', search.length === 1 && search[0].id === 'anthropic/claude-sonnet-x');
@@ -359,8 +358,9 @@ try {
 	console.log('\n— Account —');
 	{
 		const [acc] = await run({ resource: 'account', operation: 'getBalance' });
-		ok('balance in USD and DZD', acc.balanceUsd > 0 && acc.balanceUsd < 1 && Math.abs(acc.balanceDzd - acc.balanceUsd * 250) < 0.01, JSON.stringify(acc));
-		ok('spend reported', acc.usageUsd > 0 && acc.label === 'n8n e2e' && acc.dzdPerUsd === 250);
+		// signup credit: $1 × 250 = 250 Pulses, minus what the tests above spent
+		ok('balance in Pulses', acc.balancePulses > 0 && acc.balancePulses < 250 && acc.balanceUsd === undefined, JSON.stringify(acc));
+		ok('spend reported in Pulses', acc.usagePulses > 0 && acc.label === 'n8n e2e');
 	}
 
 	console.log('\n— Errors —');

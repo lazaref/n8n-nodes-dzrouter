@@ -23,8 +23,8 @@ export interface DzRouterModel {
 	context_length?: number | null;
 	max_output_tokens?: number | null;
 	capabilities?: { vision?: boolean; reasoning?: boolean; tools?: boolean };
-	/** USD per token, as strings (OpenRouter convention) */
-	pricing?: { prompt?: string; completion?: string; input_cache_read?: string };
+	/** Pulses per token, as strings (1 Pulse = 1 DA) */
+	pricing?: { unit?: string; prompt?: string; completion?: string; input_cache_read?: string };
 }
 
 export interface DzRouterResponse {
@@ -102,14 +102,10 @@ function headerNumber(headers: DzRouterResponse['headers'], name: string): numbe
 	return Number.isFinite(n) ? n : undefined;
 }
 
-/** Cost of the call as billed by DzRouter (USD and Algerian dinars), from the response headers */
+/** Cost of the call in Pulses, DzRouter's AI credit (1 Pulse = 1 DA), from the response headers */
 export function costFromHeaders(headers: DzRouterResponse['headers']): IDataObject {
-	const cost: IDataObject = {};
-	const usd = headerNumber(headers, 'x-dzrouter-cost-usd');
-	const dzd = headerNumber(headers, 'x-dzrouter-cost-dzd');
-	if (usd !== undefined) cost.usd = usd;
-	if (dzd !== undefined) cost.dzd = dzd;
-	return cost;
+	const pulses = headerNumber(headers, 'x-dzrouter-cost-pulses');
+	return pulses === undefined ? {} : { pulses };
 }
 
 export async function getModels(this: Context): Promise<DzRouterModel[]> {
@@ -117,7 +113,7 @@ export async function getModels(this: Context): Promise<DzRouterModel[]> {
 	return (body.data as DzRouterModel[] | undefined) ?? [];
 }
 
-/** USD per 1M tokens, rounded for display */
+/** Pulses per 1M tokens, rounded for display */
 export function perMillion(perToken: string | undefined): number {
 	const n = Number(perToken ?? 0) * 1e6;
 	return Number.isFinite(n) ? Math.round(n * 10000) / 10000 : 0;
@@ -130,7 +126,7 @@ function formatContext(tokens: number | null | undefined): string {
 
 export function modelSummary(model: DzRouterModel): string {
 	const parts = [
-		`$${perMillion(model.pricing?.prompt)} in / $${perMillion(model.pricing?.completion)} out per 1M tokens`,
+		`${perMillion(model.pricing?.prompt)} in / ${perMillion(model.pricing?.completion)} out Pulses per 1M tokens`,
 		formatContext(model.context_length),
 	];
 	const caps = model.capabilities ?? {};

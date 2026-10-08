@@ -24,7 +24,7 @@ import {
 } from './GenericFunctions';
 import { runTextOperation } from './TextFunctions';
 
-function simplifyModel(model: DzRouterModel, dzdPerUsd?: number): IDataObject {
+function simplifyModel(model: DzRouterModel): IDataObject {
 	const input = perMillion(model.pricing?.prompt);
 	const output = perMillion(model.pricing?.completion);
 	const out: IDataObject = {
@@ -37,14 +37,11 @@ function simplifyModel(model: DzRouterModel, dzdPerUsd?: number): IDataObject {
 		vision: !!model.capabilities?.vision,
 		tools: !!model.capabilities?.tools,
 		reasoning: !!model.capabilities?.reasoning,
-		inputPerMillionUsd: input,
-		outputPerMillionUsd: output,
-		cacheReadPerMillionUsd: perMillion(model.pricing?.input_cache_read),
+		// prices in Pulses, DzRouter's AI credit (1 Pulse = 1 DA)
+		inputPerMillionPulses: input,
+		outputPerMillionPulses: output,
+		cacheReadPerMillionPulses: perMillion(model.pricing?.input_cache_read),
 	};
-	if (dzdPerUsd) {
-		out.inputPerMillionDzd = Math.round(input * dzdPerUsd * 100) / 100;
-		out.outputPerMillionDzd = Math.round(output * dzdPerUsd * 100) / 100;
-	}
 	out.url = `https://dzrouter.com/en/models/${encodeURI(model.id)}`;
 	return out;
 }
@@ -125,17 +122,9 @@ export class DzRouter implements INodeType {
 		const items = this.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
-		// fetched at most once per execution, only by operations that need them
+		// fetched at most once per execution, only by operations that need it
 		let catalog: DzRouterModel[] | undefined;
-		let dzdPerUsd: number | undefined;
 		const loadCatalog = async () => (catalog ??= await getModels.call(this));
-		const loadRate = async (itemIndex: number) => {
-			if (dzdPerUsd === undefined) {
-				const { body } = await dzRouterRequest.call(this, 'GET', '/key', undefined, itemIndex);
-				dzdPerUsd = Number(((body.data as IDataObject | undefined) ?? {}).dzd_per_usd) || 0;
-			}
-			return dzdPerUsd;
-		};
 
 		for (let i = 0; i < items.length; i++) {
 			try {
@@ -193,7 +182,6 @@ export class DzRouter implements INodeType {
 					results.push(await runTextOperation.call(this, operation, i, model));
 				} else if (resource === 'model') {
 					const options = this.getNodeParameter('options', i, {}) as IDataObject;
-					const rate = options.includeDzd === false ? undefined : await loadRate(i);
 					const models = await loadCatalog();
 
 					if (operation === 'get') {
@@ -206,7 +194,7 @@ export class DzRouter implements INodeType {
 								description: 'Pick the model from the list, or use Model → Get Many to see what is available.',
 							});
 						}
-						results.push(simplifyModel(model, rate));
+						results.push(simplifyModel(model));
 					} else if (operation === 'getAll' || operation === 'getCheapest') {
 						const filters = this.getNodeParameter('filters', i, {}) as IDataObject;
 						const matches = filterModels(models, filters);
@@ -226,7 +214,7 @@ export class DzRouter implements INodeType {
 									description: 'Relax the price, context or capability filters.',
 								});
 							}
-							results.push(simplifyModel(priced[0], rate));
+							results.push(simplifyModel(priced[0]));
 						} else {
 							const sortBy = (options.sortBy as string | undefined) ?? 'rank';
 							const sorted = [...matches];
@@ -241,7 +229,7 @@ export class DzRouter implements INodeType {
 
 							const returnAll = this.getNodeParameter('returnAll', i, false) as boolean;
 							const limit = returnAll ? sorted.length : (this.getNodeParameter('limit', i, 50) as number);
-							results.push(...sorted.slice(0, limit).map((m) => simplifyModel(m, rate)));
+							results.push(...sorted.slice(0, limit).map((m) => simplifyModel(m)));
 						}
 					}
 				} else if (resource === 'account' && operation === 'getBalance') {
@@ -250,10 +238,8 @@ export class DzRouter implements INodeType {
 					results.push({
 						label: data.label ?? null,
 						keyPrefix: data.prefix ?? null,
-						balanceUsd: data.balance ?? 0,
-						balanceDzd: data.balance_dzd ?? 0,
-						usageUsd: data.usage ?? 0,
-						dzdPerUsd: data.dzd_per_usd ?? null,
+						balancePulses: data.balance ?? 0,
+						usagePulses: data.usage ?? 0,
 						rateLimit: data.rate_limit ?? null,
 						createdAt: data.created_at ?? null,
 						lastUsedAt: data.last_used_at ?? null,
