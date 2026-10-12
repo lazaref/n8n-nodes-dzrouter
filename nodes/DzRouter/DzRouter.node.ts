@@ -6,7 +6,9 @@ import type {
 	INodeTypeDescription,
 	JsonObject,
 } from 'n8n-workflow';
-import { NodeApiError, NodeConnectionTypes, NodeOperationError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
+
+import { NodeConnectionTypes } from '../connections';
 
 import { accountFields, accountOperations } from './descriptions/AccountDescription';
 import { chatFields, chatOperations } from './descriptions/ChatDescription';

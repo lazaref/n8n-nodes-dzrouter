@@ -115,9 +115,19 @@ With **On Error → Continue**, a failed item is returned as `{ "error": "…" }
 
 ## Compatibility
 
-- Built and tested against n8n **2.42** (`n8n-workflow` 2.42, `@n8n/ai-node-sdk` 0.32). The Chat Model sub-node needs an n8n version that includes the AI node SDK.
-- Node.js 20.15 or newer.
-- No runtime dependencies.
+| n8n version | DzRouter node | DzRouter Chat Model |
+| --- | --- | --- |
+| **2.x** | ✅ | ✅ |
+| **1.x** (tested on 1.115.2) | ✅ | Use n8n's built-in **OpenAI Chat Model** instead (below) |
+
+The Chat Model sub-node is built on n8n's AI node SDK, which ships with n8n 2.0 and later. On n8n 1.x the package still loads and the DzRouter node works fully; the DzRouter Chat Model shows a message explaining the alternative instead of running.
+
+**AI Agents on n8n 1.x:** DzRouter is OpenAI-compatible, so n8n's own OpenAI Chat Model works with it:
+
+1. Create an **OpenAI** credential: API Key = your DzRouter key (`sk-dz-…`), Base URL = `https://dzrouter.com/v1`.
+2. Add the **OpenAI Chat Model** node to your agent or chain, select that credential, and type any DzRouter model id (for example `openai/gpt-4o-mini` or `claude-opus-5-5`) in the Model field using **By ID**.
+
+Other requirements: Node.js 20.15 or newer. No runtime dependencies (`@n8n/ai-node-sdk` is an optional peer, provided by n8n 2.x).
 
 ## Development
 

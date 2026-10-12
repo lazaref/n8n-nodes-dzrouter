@@ -1,6 +1,7 @@
-import type { INodeType, INodeTypeDescription, ISupplyDataFunctions } from 'n8n-workflow';
-import { NodeConnectionTypes } from 'n8n-workflow';
-import { supplyModel } from '@n8n/ai-node-sdk';
+import type { INodeType, INodeTypeDescription, ISupplyDataFunctions, SupplyData } from 'n8n-workflow';
+import { NodeConnectionTypes } from '../connections';
+
+import { supplyDzRouterModel } from './loadSdk';
 
 import { searchModels } from '../DzRouter/GenericFunctions';
 import { DEFAULT_MODEL } from '../DzRouter/descriptions/shared';
@@ -179,27 +180,16 @@ export class DzRouterChatModel implements INodeType {
 		listSearch: { searchModels },
 	};
 
-	async supplyData(this: ISupplyDataFunctions, itemIndex: number) {
+	async supplyData(this: ISupplyDataFunctions, itemIndex: number): Promise<SupplyData> {
 		const credentials = await this.getCredentials('dzRouterApi');
 		const model = this.getNodeParameter('model', itemIndex, '', { extractValue: true }) as string;
 		const options = this.getNodeParameter('options', itemIndex, {}) as ModelOptions;
 
-		return supplyModel(this, {
-			type: 'openai',
+		return supplyDzRouterModel(this, itemIndex, {
 			baseUrl: String(credentials.url ?? 'https://dzrouter.com/v1').replace(/\/+$/, ''),
 			apiKey: credentials.apiKey as string,
 			model,
-			temperature: options.temperature,
-			maxTokens: options.maxTokens,
-			topP: options.topP,
-			frequencyPenalty: options.frequencyPenalty,
-			presencePenalty: options.presencePenalty,
-			reasoning: options.reasoningEffort ? { effort: options.reasoningEffort } : undefined,
-			timeout: options.timeout,
-			maxRetries: options.maxRetries,
-			defaultHeaders: { 'X-DzRouter-Client': 'n8n' },
-			additionalParams:
-				options.responseFormat === 'json_object' ? { response_format: { type: 'json_object' } } : undefined,
+			...options,
 		});
 	}
 }
