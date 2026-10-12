@@ -21,6 +21,7 @@
 		"email": "klazaref@gmail.com"
 	},
 	"repository": {
+		"publishConfig": { "access": "public" },
 		"type": "git",
 		"url": "git+https://github.com/lazaref/n8n-nodes-dzrouter.git"
 	},
