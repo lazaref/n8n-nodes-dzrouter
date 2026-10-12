@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-dzrouter",
-	"version": "0.2.1",
+	"version": "0.2.2",
 	"description": "n8n nodes for DzRouter: 200+ AI models (GPT, Claude, Gemini, DeepSeek, Llama) through one API key, billed in Algerian dinars. Chat, AI Agent chat model, text tools and model catalog.",
 	"license": "MIT",
 	"homepage": "https://github.com/lazaref/n8n-nodes-dzrouter#readme",
@@ -24,9 +24,9 @@
 		"type": "git",
 		"url": "git+https://github.com/lazaref/n8n-nodes-dzrouter.git"
 	},
-			"publishConfig": {
-			"access": "public"
-		},
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"build": "n8n-node build",
 		"build:watch": "tsc --watch",
