@@ -4,7 +4,7 @@
 //   npm run build && npm test
 //
 // Needs the DzRouter server repo built (npm run build there). Its location
-// defaults to ../dzrouter; override with DZROUTER_DIR.
+// is given by DZROUTER_DIR (default: ../dzrouter, next to this repository).
 import { spawn, execSync } from 'node:child_process';
 import http from 'node:http';
 import os from 'node:os';
